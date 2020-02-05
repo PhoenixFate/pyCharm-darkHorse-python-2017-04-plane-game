@@ -97,6 +97,7 @@ class Hero(GameSprite):
         # 英雄的初始位置
         self.rect.centerx = SCREEN_RECT.centerx
         self.rect.bottom = SCREEN_RECT.bottom - 120
+        self.bullet_group = pygame.sprite.Group()
 
     def update(self, *args):
         self.rect.x += self.speed_x
@@ -112,3 +113,32 @@ class Hero(GameSprite):
             self.rect.y = 0
         elif self.rect.bottom > SCREEN_RECT.bottom:
             self.rect.bottom = SCREEN_RECT.bottom
+
+    def fire(self):
+        print("飞机发射子弹")
+
+        for i in (0, 1, 2):
+            bullet = Bullet(self)
+            bullet.rect.bottom = self.rect.y - i * 16
+            bullet.rect.centerx = self.rect.centerx
+            self.bullet_group.add(bullet)
+
+
+class Bullet(GameSprite):
+    """子弹精灵"""
+
+    def __init__(self, hero):
+        # 调用父类方法，设置子弹图片，设置初始速度
+        super().__init__("./images/bullet1.png", -2)
+
+    def update(self, *args):
+        super().update()
+        # 判断是否飞出屏幕，如果是，需要从精灵组中删除
+        if self.rect.bottom <= 0:
+            print("子弹飞出屏幕，需要从精灵组中删除")
+            # kill方法可以将精灵从所有精灵组中移出，一旦移除，会从内存中销毁该精灵
+            self.kill()
+
+    # 子弹超出屏幕调用
+    def __del__(self):
+        print("子弹消失了 %s" % self.rect)

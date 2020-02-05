@@ -19,6 +19,7 @@ class PlaneGame(object):
         self.__create_sprites()
         # 4.设置定时器事件，创建敌机   第一个参数 eventId，第二个参数，定时器时间间隔
         pygame.time.set_timer(CREATE_ENEMY_EVENT, 1000)
+        pygame.time.set_timer(HERO_FIRE_EVENT, 500)
 
     def __create_sprites(self):
         # 创建背景精灵，背景精灵组
@@ -59,13 +60,15 @@ class PlaneGame(object):
                 enemy = Enemy()
                 # 将敌机精灵添加到敌机精灵组
                 self.enemy_group.add(enemy)
+            elif event.type == HERO_FIRE_EVENT:
+                self.hero.fire()
 
             # 向右的键
             # 一直按着向右的键不一直触发，所以不使用下面的方法
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                print("向右移动...")
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                print("向左移动...")
+            # elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+            #     print("向右移动...")
+            # elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+            #     print("向左移动...")
 
         # 使用键盘提供的方法获取键盘按键
         keys_pressed = pygame.key.get_pressed()
@@ -87,7 +90,16 @@ class PlaneGame(object):
             self.hero.speed_y = 0
 
     def __check_collide(self):
-        pass
+        # 1.子弹碰撞敌机
+        pygame.sprite.groupcollide(self.hero.bullet_group, self.enemy_group, True, True)
+
+        # 2.敌机撞毁飞机
+        enemy_list = pygame.sprite.spritecollide(self.hero, self.enemy_group, True)
+        if len(enemy_list):
+            # 让英雄牺牲
+            self.hero.kill()
+            # 结束游戏
+            self.__game_over()
 
     def __update_sprites(self):
         # 背景精灵组
@@ -101,6 +113,10 @@ class PlaneGame(object):
         # 英雄精灵组
         self.hero_group.update()
         self.hero_group.draw(self.screen)
+
+        # 子弹精灵组
+        self.hero.bullet_group.update()
+        self.hero.bullet_group.draw(self.screen)
 
     @staticmethod
     def __game_over():
